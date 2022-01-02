@@ -66,7 +66,10 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      body: screens[selectedIndex],
+      body: IndexedStack(
+        index: selectedIndex,
+        children: screens,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
         selectedIconTheme: IconThemeData(color: Colors.grey),

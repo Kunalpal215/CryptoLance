@@ -25,9 +25,10 @@ class _CryptoPricesListState extends State<CryptoPricesList> {
     http.Response response = await http.get(url);
     Map jsonBody = jsonDecode(response.body);
     List<dynamic> toRtn = jsonBody['items'];
-    setState(() {
-      listOfData = toRtn;
-    });
+    listOfData=toRtn;
+    // setState(() {
+    //   listOfData = toRtn;
+    // });
   }
 
   @override
@@ -160,35 +161,29 @@ class _CryptoPricesListState extends State<CryptoPricesList> {
         ),
       );
     }
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CryptoPriceHeading(),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: loadData,
-            child: listOfData.length == 0
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : ListView.builder(
-                    itemCount: listOfData.length,
-                    itemBuilder: (context, index) {
-                      CryptoPriceObject toShow = CryptoPriceObject(
-                        cryptoName: listOfData[index]['cryptoName'],
-                        cryptoPrice: listOfData[index]['currentPrice'],
-                        dayChange: listOfData[index]['DayChange'],
-                        imageLink: listOfData[index]['imageLink'],
-                        shortName: listOfData[index]['shortName'],
-                        dayChangePercent: listOfData[index]['DayChangePercent'],
-                      );
-                      return cryptoPriceInfoWidgetMaker(toShow);
-                    }),
-          ),
-        )
-      ],
+    Stream streamOfPrices(){
+        return Stream.periodic(Duration(seconds: 1),(count){
+          loadData();
+        });
+    }
+    return StreamBuilder(
+        initialData: null,
+        stream: streamOfPrices(),
+        builder: (context,snapshot){
+          return listOfData.length==0 ? Center(child: CircularProgressIndicator(),) : ListView.builder(
+              itemCount: listOfData.length,
+              itemBuilder: (context, index) {
+                CryptoPriceObject toShow = CryptoPriceObject(
+                  cryptoName: listOfData[index]['cryptoName'],
+                  cryptoPrice: listOfData[index]['currentPrice'],
+                  dayChange: listOfData[index]['DayChange'],
+                  imageLink: listOfData[index]['imageLink'],
+                  shortName: listOfData[index]['shortName'],
+                  dayChangePercent: listOfData[index]['DayChangePercent'],
+                );
+                return cryptoPriceInfoWidgetMaker(toShow);
+              });
+        }
     );
   }
 }

@@ -24,9 +24,7 @@ class _CryptoNewsListState extends State<CryptoNewsList> {
     var response = await http.get(Uri.parse('https://n59der.deta.dev/'));
     String jsonBody = response.body;
     Map<String, dynamic> items = jsonDecode(jsonBody);
-    setState(() {
-      newsItems = items['newsItems'];
-    });
+    newsItems = items['newsItems'];
   }
 
   @override
@@ -105,35 +103,24 @@ class _CryptoNewsListState extends State<CryptoNewsList> {
         ),
       );
     }
-
-    return RefreshIndicator(
-      onRefresh: getNews,
-      child: newsItems.length == 0
-          ? Center(child: CircularProgressIndicator())
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CryptoNewsHeading(),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: newsItems.length,
-                    itemBuilder: (context, index) {
-                      cryptoNewsObject toShow = cryptoNewsObject(
-                          heading: newsItems[index]["heading"],
-                          imageUrl: newsItems[index]["imageURL"],
-                          source: newsItems[index]["source"],
-                          description: newsItems[index]["description"]);
-                      // print(toShow.heading);
-                      // print(toShow.imageUrl);
-                      // print(toShow.source);
-                      // print(toShow.description);
-                      return cryptoNewsWidgetMaker(toShow);
-                    },
-                  ),
-                ),
-              ],
-            ),
-    );
+    Stream streamOfNews(){
+      return Stream.periodic(Duration(seconds: 1), (count) => getNews());
+    }
+    return StreamBuilder(
+        stream: streamOfNews(),
+        builder: (context,snapshot){
+          return newsItems.length==0 ? Center(child: CircularProgressIndicator(),) : ListView.builder(
+            itemCount: newsItems.length,
+            itemBuilder: (context, index) {
+              cryptoNewsObject toShow = cryptoNewsObject(
+                  heading: newsItems[index]["heading"],
+                  imageUrl: newsItems[index]["imageURL"],
+                  source: newsItems[index]["source"],
+                  description: newsItems[index]["description"]);
+              return cryptoNewsWidgetMaker(toShow);
+            },
+          );
+        });
   }
 }
 
